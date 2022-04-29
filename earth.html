@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Terras</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+		<script type="module">
+			import * as THREE from '/build/three.module.js';
+
+			var earthmesh, flat_earth_mesh, renderer, scene, camera;
+			function init(){
+				scene = new THREE.Scene();
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				function createEarth(){
+					const geometry = new THREE.SphereGeometry(1, 32, 32);
+					const texture = new THREE.TextureLoader().load('textures/earth.jpg');
+					const material = new THREE.MeshBasicMaterial({ map: texture });
+					earthmesh = new THREE.Mesh(geometry, material);
+					scene.add(earthmesh);
+
+					earthmesh.position.set(0, 0, 0);
+				}
+				createEarth();
+
+				function createFlatEarth(){
+					const geometry = new THREE.RingGeometry(1, 15, 32, 15);
+					const texture = new THREE.TextureLoader().load('textures/earth.jpg');
+					const material = new THREE.MeshBasicMaterial({ 
+						map: texture,
+						side: THREE.DoubleSide
+					});
+					flat_earth_mesh = new THREE.Mesh( geometry, material );
+					scene.add(flat_earth_mesh);
+
+					flat_earth_mesh.position.set(0, 2, 0);
+					flat_earth_mesh.scale.set(0.1, 0.1, 0.1);
+				}
+				createFlatEarth();
+
+				camera.position.z = 5;
+
+				const axesHelper = new THREE.AxesHelper(10);
+				scene.add(axesHelper);
+			}
+			init();
+
+			var r = 2; //https://mattloftus.github.io/2016/02/03/threejs-p2/
+			var theta = 0;
+			var dTheta = 2 * Math.PI / 1000;
+			var flagCamera = true;
+			function animate() {
+				requestAnimationFrame(animate);
+
+				earthmesh.rotation.y += 0.005;
+				flat_earth_mesh.rotation.x += 0.1;
+				flat_earth_mesh.rotation.z += 0.1;
+				flat_earth_mesh.rotation.y += 0.1;
+
+				if (camera.position.y > 1.0)
+					flagCamera = false;
+				else if(camera.position.y < -1.0)
+					flagCamera = true;
+
+				if (flagCamera == true){
+					camera.position.x += 0.001;
+					camera.position.y += 0.001;
+					camera.position.z += 0.001;
+				}else{
+					camera.position.x -= 0.001;
+					camera.position.y -= 0.001;
+					camera.position.z -= 0.001;
+				}
+				
+				console.log(camera.position);
+
+				theta += dTheta;
+				earthmesh.position.x = -1 * r * Math.cos(theta);
+				earthmesh.position.z = -1 * r * Math.sin(theta);
+				flat_earth_mesh.position.x = r * Math.cos(theta);
+				flat_earth_mesh.position.z = r * Math.sin(theta);
+				renderer.render(scene, camera);
+			};
+
+			animate();
+		</script>
+	</body>
+</html>

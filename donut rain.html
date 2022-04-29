@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Tá chovendo Donut</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+		<script type="module">
+			import * as THREE from '/build/three.module.js';
+
+			var earthmesh, flat_earth_mesh, renderer, scene, camera;
+			function init(){
+				scene = new THREE.Scene();
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+				camera.position.z = 5;
+
+				const axesHelper = new THREE.AxesHelper(10);
+				scene.add(axesHelper);
+			}
+			init();
+
+			let donuts = [];
+			function createDonut(){
+				let geometry = new THREE.TorusGeometry(1, 0.5, 10, 40);
+				let material = new THREE.MeshBasicMaterial({
+					color: Math.random() * 0xffffff
+				});
+					
+				let d = new THREE.Mesh( geometry, material );
+					
+				d.position.x = (Math.random() * 20) - 10; //-10 a 10
+				d.position.z = (Math.random() * 20) - 10;
+				d.position.y = (Math.random() * 20) - 10;
+				scene.add(d);
+				donuts.push(d);
+			}
+
+			function animate() {
+				requestAnimationFrame(animate);
+				let x = Math.random();
+		        if(x < 0.5)
+        		    createDonut();
+
+				donuts.forEach((d) => {d.rotation.x += 0.01;} );
+				donuts.forEach((d) => {d.rotation.y += 0.01;} );
+				donuts.forEach((d) => {d.rotation.z += 0.01;} );
+
+				donuts.forEach((d) => {d.position.y -= 0.1;} );
+
+				renderer.render(scene, camera);
+			};
+
+			animate();
+		</script>
+	</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Borboleta</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+		<script type="module">
+			import * as THREE from '/build/three.module.js';
+
+			var renderer, scene, camera;
+			function init(){
+				scene = new THREE.Scene();
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+				camera.position.z = 7;
+				camera.position.y = 7;
+				camera.position.x = 7;
+				camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+				const axesHelper = new THREE.AxesHelper(10);
+				scene.add(axesHelper);
+			}
+			init();
+
+			let butterfly;
+			function createButterfly(){
+				let geometry = new THREE.BufferGeometry();
+				let material = new THREE.MeshBasicMaterial({
+					color: 0xff0000,
+					side: THREE.DoubleSide, 
+					wireframe: false
+				});
+					
+				butterfly = new THREE.Mesh(geometry, material);
+					
+				const points = [];
+				points.push(new THREE.Vector3(1, 2, 1));
+				points.push(new THREE.Vector3(4, 2, 1));
+				points.push(new THREE.Vector3(2, 2, 3));
+
+				points.push(new THREE.Vector3(1, 2, 5));
+				points.push(new THREE.Vector3(4, 2, 5));
+				points.push(new THREE.Vector3(2, 2, 3));
+
+				//points.push(new THREE.Vector3(2, 4, -3));
+				geometry.setFromPoints(points);
+
+				scene.add(butterfly);
+			}
+			createButterfly();
+
+			let orientation_wing = 1;
+			const SPEED = 0.2;
+			function animate() {
+				requestAnimationFrame(animate);
+				//butterfly.geometry.attributes.position.array[0] += 0.01;
+				butterfly.geometry.attributes.position.array[1] += SPEED * orientation_wing;
+				butterfly.geometry.attributes.position.array[2] += SPEED * orientation_wing;
+				//butterfly.geometry.attributes.position.array[3] += 0.01;
+				butterfly.geometry.attributes.position.array[4] += SPEED * orientation_wing;
+				butterfly.geometry.attributes.position.array[5] += SPEED * orientation_wing;
+
+				//butterfly.geometry.attributes.position.array[6] += 0.01;
+				//butterfly.geometry.attributes.position.array[7] += 0.01 * orientation_wing;
+				//butterfly.geometry.attributes.position.array[8] += 0.01 * orientation_wing;
+				
+				//butterfly.geometry.attributes.position.array[9] += 0.01;
+				butterfly.geometry.attributes.position.array[10] += SPEED * orientation_wing;
+				butterfly.geometry.attributes.position.array[11] += SPEED * orientation_wing;
+
+				//butterfly.geometry.attributes.position.array[12] += 0.01;
+				butterfly.geometry.attributes.position.array[13] += SPEED * orientation_wing;
+				butterfly.geometry.attributes.position.array[14] += SPEED * orientation_wing;
+
+				if (butterfly.geometry.attributes.position.array[1] > 3)
+					orientation_wing *= -1;
+				if (butterfly.geometry.attributes.position.array[1] < 1.5)
+					orientation_wing *= -1;
+
+				butterfly.geometry.attributes.position.needsUpdate = true;
+				renderer.render(scene, camera);
+			};
+
+			animate();
+		</script>
+	</body>
+</html>
