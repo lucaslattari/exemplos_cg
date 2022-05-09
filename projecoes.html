@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Projeções!</title>
+		<style>
+			body { margin: 0; }
+			.explicacao { 
+				background-color: gray;
+				color: white;
+				font-size: 1.1em;
+			}
+
+			b{
+				color: yellow;
+			}
+		</style>
+	</head>
+	<body>
+		<div align="center" class="explicacao">
+			Aperte <b>O</b> para projeção ortográfica e <b>P</b> para projeção perspectiva.
+			<br/>
+		</div>
+		<script type="module">
+			import * as THREE from "/build/three.module.js";
+			import Stats from "/jsm/libs/stats.module.js";
+
+			let WIDTH = window.innerWidth;
+			let HEIGHT = window.innerHeight;
+			let ASPECT = WIDTH / HEIGHT;
+
+			const PERSPECTIVE = 0, ORTHOGRAPHIC = 1;
+
+			let camera = [], active_camera, scene, renderer, stats;
+			let cube_wooden, cube_blue, sphere;
+
+			function init(){
+ 		     	scene = new THREE.Scene();
+      			camera.push(new THREE.PerspectiveCamera(45, ASPECT, 
+					0.1, 1000));
+				camera.push(new THREE.OrthographicCamera(-5, 5, 5, -5, 
+					0.1, 1000)); //left, right, top, bottom, near, far
+
+				active_camera = camera[PERSPECTIVE];
+				active_camera.position.set(1, 1, 10);
+
+				let axesHelper = new THREE.AxesHelper(10);
+      			scene.add(axesHelper);
+
+				function createBlueBox(){
+					const geometry = new THREE.BoxGeometry();
+					const material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
+					cube_blue = new THREE.Mesh(geometry, material);
+					scene.add(cube_blue);
+
+					cube_blue.position.x = 0;
+					cube_blue.position.y = 2;
+					cube_blue.position.z = 0;
+				}
+
+				function createWoodenBox(){
+					const geometry = new THREE.BoxGeometry();
+					const texture = new THREE.TextureLoader().load('textures/crate.gif');
+					const material = new THREE.MeshBasicMaterial({ map: texture });
+					cube_wooden = new THREE.Mesh(geometry, material);
+					scene.add(cube_wooden);
+				}
+				function createYellowSphere(){
+					const geometry = new THREE.SphereGeometry(1, 20, 20);
+					const material = new THREE.MeshBasicMaterial({color: 0xffff00,
+																wireframe: true});
+					sphere = new THREE.Mesh(geometry, material);
+					scene.add(sphere);
+
+					sphere.position.x = 3;
+					sphere.position.y = 0;
+					sphere.position.z = 5;
+				}
+
+				createWoodenBox();
+				createBlueBox();
+				createYellowSphere();
+
+				renderer = new THREE.WebGLRenderer({antialias: true});
+      			renderer.setSize(WIDTH, HEIGHT);
+      			document.body.appendChild(renderer.domElement);
+
+				stats = new Stats();
+				let container = document.createElement('div');
+				document.body.appendChild(container);
+				container.appendChild(stats.dom);
+
+				window.addEventListener('resize', onWindowResize);
+				document.addEventListener('keydown', onKeyDown);
+			}
+			init();
+
+			function onWindowResize(){
+				WIDTH, HEIGHT = window.innerWidth, window.innerHeight;
+				ASPECT = WIDTH / HEIGHT;
+
+				renderer.setSize(WIDTH, HEIGHT);
+
+				active_camera.aspect = ASPECT;
+				active_camera.updateProjectionMatrix();
+			}
+
+			function onKeyDown(event){
+				switch(event.keyCode) {
+					case 79: //"O"
+						active_camera = camera[ORTHOGRAPHIC];
+						active_camera.position.set(1, 1, 10);
+						break;
+
+					case 80: //'P'
+						active_camera = camera[PERSPECTIVE];
+						active_camera.position.set(1, 1, 10);
+						break;
+				}
+			}
+
+			function applyMatrixInCube(){
+				//matriz própria (translação no eixo X)
+				let translation_matrix = new THREE.Matrix4();
+				translation_matrix.set(
+					1, 0, 0, 3,
+					0, 1, 0, 0,
+					0, 0, 1, 0,
+					0, 0, 0, 1
+				);
+				cube_wooden.applyMatrix4(translation_matrix);
+			}
+
+			function applyShearInCube(){
+				let xy = 2, xz = 0;
+				let yx = 0, yz = 0;
+				let zx = 0, zy = 0;
+				cube_wooden.matrixAutoUpdate = false;
+				cube_wooden.matrix.makeShear(xy, xz, yx, yz, zx, zy);
+				console.log(cube_wooden.matrix.elements);
+			}
+
+			let flag_sphere = 1;
+			const animate = function () {
+				requestAnimationFrame(animate);
+
+				cube_wooden.rotation.x += 0.01;
+				sphere.rotation.x += 0.01;
+
+				if (flag_sphere == 1){
+					sphere.position.y += 0.01;
+				}
+				else if (flag_sphere == -1){
+					sphere.position.y -= 0.01;
+				}
+
+				if(sphere.position.y > 1.5){
+					flag_sphere *= -1;
+					sphere.material.color.setHex(0x00ff00);
+				}
+				else if(sphere.position.y < -1.5)
+				{
+					flag_sphere *= -1;
+					sphere.material.color.setHex(0xff0000);
+				}
+
+				renderer.render(scene, active_camera);
+				stats.update();
+			};
+
+			//console.log(cube_wooden.matrix.elements); //https://threejs.org/docs/#api/en/math/Matrix4
+			//applyMatrixInCube();
+			//applyShearInCube();
+			animate();
+		</script>
+	</body>
+</html>
